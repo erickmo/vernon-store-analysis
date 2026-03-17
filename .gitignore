@@ -1,0 +1,35 @@
+# ─── OS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Editor ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── API (Python) ───────────────────────────────────────────────────────────
+api/venv/
+api/.venv/
+api/__pycache__/
+api/**/__pycache__/
+api/**/*.pyc
+api/.pytest_cache/
+api/.mypy_cache/
+api/.ruff_cache/
+api/htmlcov/
+api/.coverage
+api/.env
+api/.env.*
+!api/.env.example
+
+# ─── Dashboard (Flutter) ────────────────────────────────────────────────────
+dashboard/.dart_tool/
+dashboard/.flutter-plugins
+dashboard/.flutter-plugins-dependencies
+dashboard/.packages
+dashboard/build/
+dashboard/pubspec.lock
+dashboard/.env
+dashboard/.env.*
+!dashboard/.env.example
