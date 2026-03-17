@@ -1,0 +1,406 @@
+{
+  "info": {
+    "name": "Vernon Store Analytics API",
+    "description": "Complete API collection for CCTV-based shoplifting detection system with real-time monitoring and alert management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and token management",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('access_token', jsonData.data.access_token);",
+                  "    pm.environment.set('user_id', jsonData.data.user.id);",
+                  "    pm.environment.set('store_id', jsonData.data.user.store_id);",
+                  "    pm.test('Login successful', function() {",
+                  "        pm.expect(jsonData.success).to.equal(true);",
+                  "        pm.expect(jsonData.data.access_token).to.be.a('string');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Login failed', function() {",
+                  "        pm.expect(pm.response.code).to.equal(200);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"manager@vernon.local\",\n    \"password\": \"secure_password_123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "description": "Shoplifting alert management and resolution",
+      "item": [
+        {
+          "name": "List Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/stores/{{store_id}}/alerts?resolved=false&limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stores", "{{store_id}}", "alerts"],
+              "query": [
+                {
+                  "key": "resolved",
+                  "value": "false",
+                  "description": "Filter by resolution status (true/false/null for all)"
+                },
+                {
+                  "key": "confidence_min",
+                  "value": "0.75",
+                  "disabled": true,
+                  "description": "Minimum confidence (0.0-1.0)"
+                },
+                {
+                  "key": "confidence_max",
+                  "value": "1.0",
+                  "disabled": true,
+                  "description": "Maximum confidence (0.0-1.0)"
+                },
+                {
+                  "key": "camera_id",
+                  "value": "1",
+                  "disabled": true,
+                  "description": "Filter by camera"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Results per page (max 200)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Pagination offset"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/alerts/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "alerts", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolve Alert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"note\": \"Customer was browsing shelves, nervous because first time in store. False alarm.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/alerts/1/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "alerts", "1", "resolve"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Visitors",
+      "description": "Visitor tracking and behavior profiling",
+      "item": [
+        {
+          "name": "List Visitors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/stores/{{store_id}}/visitors?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stores", "{{store_id}}", "visitors"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Visitor Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/visitors/person_abc123def456",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "visitors", "person_abc123def456"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Traffic",
+      "description": "Store traffic metrics and footfall analytics",
+      "item": [
+        {
+          "name": "Get Traffic Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/stores/{{store_id}}/traffic?date=2026-03-17",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stores", "{{store_id}}", "traffic"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-03-17",
+                  "description": "Date in YYYY-MM-DD format"
+                },
+                {
+                  "key": "period",
+                  "value": "day",
+                  "disabled": true,
+                  "description": "day, week, month, year"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Advanced analytics and statistics",
+      "item": [
+        {
+          "name": "Shoplifting Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analytics/shoplifting?period=week&store_id={{store_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analytics", "shoplifting"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "week",
+                  "description": "day, week, month, year"
+                },
+                {
+                  "key": "store_id",
+                  "value": "{{store_id}}"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-03-10",
+                  "disabled": true,
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-03-17",
+                  "disabled": true,
+                  "description": "End date (YYYY-MM-DD)"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cameras",
+      "description": "CCTV camera management and monitoring",
+      "item": [
+        {
+          "name": "List Cameras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/stores/{{store_id}}/cameras",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stores", "{{store_id}}", "cameras"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Camera Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cameras/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cameras", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "description": "Dashboard and summary statistics",
+      "item": [
+        {
+          "name": "Dashboard Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/statistics/dashboard?store_id={{store_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "statistics", "dashboard"],
+              "query": [
+                {
+                  "key": "store_id",
+                  "value": "{{store_id}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Stream",
+      "description": "Real-time stream management and WebSocket",
+      "item": [
+        {
+          "name": "Stream Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/stream/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "stream", "stats"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "description": "API health and availability check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "store_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}

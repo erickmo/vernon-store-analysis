@@ -36,9 +36,48 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="Backend engine untuk CCTV store analytics — traffic analysis, person identification, mood detection, dan shoplifting detection.",
-    docs_url="/docs" if not settings.is_production else None,
-    redoc_url="/redoc" if not settings.is_production else None,
+    docs_url="/api/docs" if not settings.is_production else None,
+    redoc_url="/api/redoc" if not settings.is_production else None,
+    openapi_url="/api/openapi.json" if not settings.is_production else None,
     lifespan=lifespan,
+    openapi_tags=[
+        {
+            "name": "Authentication",
+            "description": "User login, logout, and token management",
+        },
+        {
+            "name": "Stores",
+            "description": "Store management and configuration",
+        },
+        {
+            "name": "Cameras",
+            "description": "CCTV camera management and monitoring",
+        },
+        {
+            "name": "Alerts",
+            "description": "Shoplifting alert management and resolution",
+        },
+        {
+            "name": "Stream",
+            "description": "Real-time stream management and WebSocket",
+        },
+        {
+            "name": "Visitors",
+            "description": "Visitor analytics and behavior tracking",
+        },
+        {
+            "name": "Traffic",
+            "description": "Store traffic and footfall analytics",
+        },
+        {
+            "name": "Analytics",
+            "description": "Advanced analytics and statistics",
+        },
+        {
+            "name": "Statistics",
+            "description": "Detailed statistics and metrics",
+        },
+    ],
 )
 
 # ── Middleware ─────────────────────────────────────────────────
