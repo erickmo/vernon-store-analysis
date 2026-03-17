@@ -82,7 +82,9 @@ final GetIt getIt = GetIt.instance;
 Future<void> setupDependencies() async {
   // ── Core ──────────────────────────────────────────────────────
   getIt.registerLazySingleton<FlutterSecureStorage>(
-    () => const FlutterSecureStorage(),
+    () => const FlutterSecureStorage(
+      webOptions: WebOptions(dbName: 'vernon_secure', publicKey: 'vernon_key'),
+    ),
   );
 
   getIt.registerLazySingleton<TokenManager>(

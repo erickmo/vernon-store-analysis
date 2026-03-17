@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/http_client.dart';
 import '../models/token_model.dart';
@@ -39,11 +37,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await _client.post<Map<String, dynamic>>(
       ApiEndpoints.login,
-      data: FormData.fromMap({
-        'username': email,
-        'password': password,
-      }),
-      options: Options(contentType: 'application/x-www-form-urlencoded'),
+      data: {'email': email, 'password': password},
     );
     return TokenModel.fromJson(response.data!);
   }

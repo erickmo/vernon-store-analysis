@@ -34,15 +34,15 @@ class MoodChartCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingS),
-            _MoodLegend(),
+            const _MoodLegend(),
             const SizedBox(height: AppDimensions.spacingM),
-            _ZoneMoodRow(label: 'Entry', snapshot: mood.entry),
+            _ZoneMoodRow(label: 'Entry', items: mood.entry),
             const SizedBox(height: AppDimensions.spacingS),
-            _ZoneMoodRow(label: 'Exit', snapshot: mood.exit),
+            _ZoneMoodRow(label: 'Exit', items: mood.exit),
             const SizedBox(height: AppDimensions.spacingS),
-            _ZoneMoodRow(label: 'Kasir', snapshot: mood.cashier),
+            _ZoneMoodRow(label: 'Kasir', items: mood.cashier),
             const SizedBox(height: AppDimensions.spacingS),
-            _ZoneMoodRow(label: 'Lantai', snapshot: mood.floor),
+            _ZoneMoodRow(label: 'Lantai', items: mood.floor),
           ],
         ),
       ),
@@ -97,23 +97,34 @@ class _MoodLegend extends StatelessWidget {
 
 class _ZoneMoodRow extends StatelessWidget {
   final String label;
-  final MoodSnapshot snapshot;
+  final List<MoodItem> items;
 
-  const _ZoneMoodRow({required this.label, required this.snapshot});
+  const _ZoneMoodRow({required this.label, required this.items});
+
+  Color _colorForMood(String mood) {
+    return switch (mood) {
+      'happy' => AppColors.success,
+      'neutral' => AppColors.chartBlue,
+      'sad' => AppColors.chartPurple,
+      'angry' => AppColors.error,
+      'surprised' => AppColors.chartOrange,
+      _ => AppColors.surfaceVariant,
+    };
+  }
+
+  double _happyPercentage() {
+    try {
+      return items.firstWhere((i) => i.mood == 'happy').percentage;
+    } catch (_) {
+      return 0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final total =
-        snapshot.happy + snapshot.neutral + snapshot.sad + snapshot.angry + snapshot.surprised;
 
-    final segments = [
-      (value: snapshot.happy, color: AppColors.success),
-      (value: snapshot.neutral, color: AppColors.chartBlue),
-      (value: snapshot.sad, color: AppColors.chartPurple),
-      (value: snapshot.angry, color: AppColors.error),
-      (value: snapshot.surprised, color: AppColors.chartOrange),
-    ];
+    if (items.isEmpty) return const SizedBox.shrink();
 
     return Row(
       children: [
@@ -135,12 +146,12 @@ class _ZoneMoodRow extends StatelessWidget {
             child: SizedBox(
               height: 16,
               child: Row(
-                children: segments
-                    .where((s) => s.value > 0)
+                children: items
+                    .where((i) => i.percentage > 0)
                     .map(
-                      (s) => Flexible(
-                        flex: (s.value * 100).round(),
-                        child: Container(color: s.color),
+                      (i) => Flexible(
+                        flex: (i.percentage * 100).round(),
+                        child: Container(color: _colorForMood(i.mood)),
                       ),
                     )
                     .toList(),
@@ -152,7 +163,7 @@ class _ZoneMoodRow extends StatelessWidget {
         SizedBox(
           width: 52,
           child: Text(
-            '${snapshot.happy.toStringAsFixed(0)}% 😊',
+            '${_happyPercentage().toStringAsFixed(0)}% 😊',
             style: textTheme.bodySmall?.copyWith(
               color: AppColors.onSurfaceVariant,
             ),

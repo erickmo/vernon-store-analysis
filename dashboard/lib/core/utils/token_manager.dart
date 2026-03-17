@@ -1,6 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Mengelola penyimpanan JWT token secara aman menggunakan secure storage.
+///
+/// Semua operasi di-wrap dengan try-catch agar aman di web
+/// (WebCrypto API bisa gagal pada non-HTTPS context).
 class TokenManager {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
@@ -11,12 +14,16 @@ class TokenManager {
 
   /// Simpan access token.
   Future<void> saveAccessToken(String token) async {
-    await _storage.write(key: _accessTokenKey, value: token);
+    try {
+      await _storage.write(key: _accessTokenKey, value: token);
+    } catch (_) {}
   }
 
   /// Simpan refresh token.
   Future<void> saveRefreshToken(String token) async {
-    await _storage.write(key: _refreshTokenKey, value: token);
+    try {
+      await _storage.write(key: _refreshTokenKey, value: token);
+    } catch (_) {}
   }
 
   /// Simpan kedua token sekaligus.
@@ -30,22 +37,32 @@ class TokenManager {
     ]);
   }
 
-  /// Ambil access token. Null jika belum ada.
+  /// Ambil access token. Null jika belum ada atau storage gagal.
   Future<String?> getAccessToken() async {
-    return _storage.read(key: _accessTokenKey);
+    try {
+      return await _storage.read(key: _accessTokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
-  /// Ambil refresh token. Null jika belum ada.
+  /// Ambil refresh token. Null jika belum ada atau storage gagal.
   Future<String?> getRefreshToken() async {
-    return _storage.read(key: _refreshTokenKey);
+    try {
+      return await _storage.read(key: _refreshTokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Hapus semua token (logout).
   Future<void> clearTokens() async {
-    await Future.wait([
-      _storage.delete(key: _accessTokenKey),
-      _storage.delete(key: _refreshTokenKey),
-    ]);
+    try {
+      await Future.wait([
+        _storage.delete(key: _accessTokenKey),
+        _storage.delete(key: _refreshTokenKey),
+      ]);
+    } catch (_) {}
   }
 
   /// True jika access token tersimpan.

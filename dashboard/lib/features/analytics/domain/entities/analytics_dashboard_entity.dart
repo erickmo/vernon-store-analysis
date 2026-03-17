@@ -16,85 +16,64 @@ class AnalyticsSummary extends Equatable {
   List<Object?> get props => [totalVisitors, avgDwellMinutes, maxDwellMinutes];
 }
 
-/// Stat per gender (count + percentage).
-class GenderStat extends Equatable {
+/// Satu item gender (misal: male 75, 50%).
+class GenderItem extends Equatable {
+  final String gender;
   final int count;
   final double percentage;
 
-  const GenderStat({required this.count, required this.percentage});
+  const GenderItem({
+    required this.gender,
+    required this.count,
+    required this.percentage,
+  });
 
   @override
-  List<Object?> get props => [count, percentage];
+  List<Object?> get props => [gender, count, percentage];
 }
 
-/// Distribusi gender.
-class GenderDistribution extends Equatable {
-  final GenderStat male;
-  final GenderStat female;
-
-  const GenderDistribution({required this.male, required this.female});
-
-  @override
-  List<Object?> get props => [male, female];
-}
-
-/// Stat per kelompok usia.
-class AgeStat extends Equatable {
+/// Satu item kelompok usia.
+class AgeGroupItem extends Equatable {
+  final String ageGroup;
   final int count;
   final double percentage;
+  final double? avgAge;
 
-  const AgeStat({required this.count, required this.percentage});
-
-  @override
-  List<Object?> get props => [count, percentage];
-}
-
-/// Distribusi kelompok usia.
-class AgeGroups extends Equatable {
-  final AgeStat under18;
-  final AgeStat age1825;
-  final AgeStat age2635;
-  final AgeStat age3650;
-  final AgeStat over50;
-
-  const AgeGroups({
-    required this.under18,
-    required this.age1825,
-    required this.age2635,
-    required this.age3650,
-    required this.over50,
+  const AgeGroupItem({
+    required this.ageGroup,
+    required this.count,
+    required this.percentage,
+    this.avgAge,
   });
 
   @override
-  List<Object?> get props => [under18, age1825, age2635, age3650, over50];
+  List<Object?> get props => [ageGroup, count, percentage, avgAge];
 }
 
-/// Snapshot mood di satu zona (persentase per ekspresi).
-class MoodSnapshot extends Equatable {
-  final double happy;
-  final double neutral;
-  final double sad;
-  final double angry;
-  final double surprised;
+/// Satu item mood di suatu zona (misal: happy 52, 34.7%).
+class MoodItem extends Equatable {
+  final String mood;
+  final int count;
+  final double percentage;
+  final double avgConfidence;
 
-  const MoodSnapshot({
-    required this.happy,
-    required this.neutral,
-    required this.sad,
-    required this.angry,
-    required this.surprised,
+  const MoodItem({
+    required this.mood,
+    required this.count,
+    required this.percentage,
+    required this.avgConfidence,
   });
 
   @override
-  List<Object?> get props => [happy, neutral, sad, angry, surprised];
+  List<Object?> get props => [mood, count, percentage, avgConfidence];
 }
 
 /// Mood di semua zona (entry, exit, cashier, floor).
 class MoodData extends Equatable {
-  final MoodSnapshot entry;
-  final MoodSnapshot exit;
-  final MoodSnapshot cashier;
-  final MoodSnapshot floor;
+  final List<MoodItem> entry;
+  final List<MoodItem> exit;
+  final List<MoodItem> cashier;
+  final List<MoodItem> floor;
 
   const MoodData({
     required this.entry,
@@ -109,51 +88,55 @@ class MoodData extends Equatable {
 
 /// Data dwell time agregat.
 class DwellTimeData extends Equatable {
-  final double avgDwellMinutes;
-  final double medianDwellMinutes;
+  final int totalVisits;
+  final double avgDwellSeconds;
+  final int minDwellSeconds;
   final int maxDwellSeconds;
+  final double avgDwellMinutes;
 
   const DwellTimeData({
-    required this.avgDwellMinutes,
-    required this.medianDwellMinutes,
+    required this.totalVisits,
+    required this.avgDwellSeconds,
+    required this.minDwellSeconds,
     required this.maxDwellSeconds,
+    required this.avgDwellMinutes,
   });
 
   @override
-  List<Object?> get props =>
-      [avgDwellMinutes, medianDwellMinutes, maxDwellSeconds];
+  List<Object?> get props => [
+        totalVisits,
+        avgDwellSeconds,
+        minDwellSeconds,
+        maxDwellSeconds,
+        avgDwellMinutes,
+      ];
 }
 
-/// Distribusi dwell time dalam bucket menit.
-class DwellDistribution extends Equatable {
-  final int under5min;
-  final int min515;
-  final int min1530;
-  final int min3060;
-  final int over60min;
+/// Satu bucket distribusi dwell time.
+class DwellBucket extends Equatable {
+  final String bucket;
+  final int count;
+  final double percentage;
 
-  const DwellDistribution({
-    required this.under5min,
-    required this.min515,
-    required this.min1530,
-    required this.min3060,
-    required this.over60min,
+  const DwellBucket({
+    required this.bucket,
+    required this.count,
+    required this.percentage,
   });
 
   @override
-  List<Object?> get props =>
-      [under5min, min515, min1530, min3060, over60min];
+  List<Object?> get props => [bucket, count, percentage];
 }
 
 /// Traffic per jam.
 class HourlyTrafficPoint extends Equatable {
-  final int hour;
-  final int count;
+  final String hour;
+  final int visitorCount;
 
-  const HourlyTrafficPoint({required this.hour, required this.count});
+  const HourlyTrafficPoint({required this.hour, required this.visitorCount});
 
   @override
-  List<Object?> get props => [hour, count];
+  List<Object?> get props => [hour, visitorCount];
 }
 
 /// Entitas utama dashboard analitik.
@@ -162,11 +145,11 @@ class AnalyticsDashboardEntity extends Equatable {
   final DateTime periodStart;
   final DateTime periodEnd;
   final AnalyticsSummary summary;
-  final GenderDistribution gender;
-  final AgeGroups ageGroups;
+  final List<GenderItem> gender;
+  final List<AgeGroupItem> ageGroups;
   final MoodData mood;
   final DwellTimeData dwellTime;
-  final DwellDistribution dwellDistribution;
+  final List<DwellBucket> dwellDistribution;
   final List<HourlyTrafficPoint> hourlyTraffic;
 
   const AnalyticsDashboardEntity({

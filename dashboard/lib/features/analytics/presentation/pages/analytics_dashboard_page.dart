@@ -215,9 +215,20 @@ class _KpiGrid extends StatelessWidget {
 
   const _KpiGrid({required this.dashboard});
 
+  GenderItem? _findGender(String key) {
+    try {
+      return dashboard.gender.firstWhere((g) => g.gender == key);
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final summary = dashboard.summary;
+    final male = _findGender('male');
+    final female = _findGender('female');
+
     final items = [
       (
         icon: Icons.people,
@@ -236,23 +247,26 @@ class _KpiGrid extends StatelessWidget {
       (
         icon: Icons.male,
         label: 'Pengunjung Pria',
-        value: dashboard.gender.male.count.toString(),
-        subtitle: '${dashboard.gender.male.percentage.toStringAsFixed(1)}%',
+        value: male?.count.toString() ?? '-',
+        subtitle: male != null
+            ? '${male.percentage.toStringAsFixed(1)}%'
+            : null,
         color: AppColors.chartBlue,
       ),
       (
         icon: Icons.female,
         label: 'Pengunjung Wanita',
-        value: dashboard.gender.female.count.toString(),
-        subtitle: '${dashboard.gender.female.percentage.toStringAsFixed(1)}%',
+        value: female?.count.toString() ?? '-',
+        subtitle: female != null
+            ? '${female.percentage.toStringAsFixed(1)}%'
+            : null,
         color: AppColors.chartPink,
       ),
     ];
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossCount =
-            constraints.maxWidth > 600 ? 4 : 2;
+        final crossCount = constraints.maxWidth > 600 ? 4 : 2;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -283,21 +297,21 @@ class _KpiGrid extends StatelessWidget {
 // ── Age group card ────────────────────────────────────────────────────────────
 
 class _AgeGroupCard extends StatelessWidget {
-  final AgeGroups ageGroups;
+  final List<AgeGroupItem> ageGroups;
 
   const _AgeGroupCard({required this.ageGroups});
+
+  static const _colorMap = {
+    0: AppColors.chartPurple,
+    1: AppColors.chartBlue,
+    2: AppColors.chartTeal,
+    3: AppColors.chartOrange,
+    4: AppColors.chartPink,
+  };
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-
-    final groups = [
-      (label: '< 18', stat: ageGroups.under18, color: AppColors.chartPurple),
-      (label: '18–25', stat: ageGroups.age1825, color: AppColors.chartBlue),
-      (label: '26–35', stat: ageGroups.age2635, color: AppColors.chartTeal),
-      (label: '36–50', stat: ageGroups.age3650, color: AppColors.chartOrange),
-      (label: '> 50', stat: ageGroups.over50, color: AppColors.chartPink),
-    ];
 
     return Card(
       elevation: AppDimensions.cardElevation,
@@ -318,15 +332,16 @@ class _AgeGroupCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            ...groups.map(
-              (g) => Padding(
+            ...ageGroups.asMap().entries.map(
+              (entry) => Padding(
                 padding:
                     const EdgeInsets.only(bottom: AppDimensions.spacingS),
                 child: _AgeBar(
-                  label: g.label,
-                  count: g.stat.count,
-                  percentage: g.stat.percentage,
-                  color: g.color,
+                  label: entry.value.ageGroup,
+                  count: entry.value.count,
+                  percentage: entry.value.percentage,
+                  color: _colorMap[entry.key % _colorMap.length] ??
+                      AppColors.chartBlue,
                 ),
               ),
             ),
@@ -357,13 +372,14 @@ class _AgeBar extends StatelessWidget {
     return Row(
       children: [
         SizedBox(
-          width: 48,
+          width: 64,
           child: Text(
             label,
             style: textTheme.bodySmall?.copyWith(
               color: AppColors.onSurfaceVariant,
               fontWeight: FontWeight.w500,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
@@ -399,7 +415,7 @@ class _AgeBar extends StatelessWidget {
 
 class _DwellTimeCard extends StatelessWidget {
   final DwellTimeData dwellTime;
-  final DwellDistribution distribution;
+  final List<DwellBucket> distribution;
 
   const _DwellTimeCard({
     required this.dwellTime,
@@ -410,14 +426,9 @@ class _DwellTimeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    final buckets = [
-      (label: '< 5 mnt', count: distribution.under5min),
-      (label: '5–15 mnt', count: distribution.min515),
-      (label: '15–30 mnt', count: distribution.min1530),
-      (label: '30–60 mnt', count: distribution.min3060),
-      (label: '> 60 mnt', count: distribution.over60min),
-    ];
-    final maxCount = buckets.map((b) => b.count).reduce((a, b) => a > b ? a : b);
+    final maxCount = distribution.isEmpty
+        ? 1
+        : distribution.map((b) => b.count).reduce((a, b) => a > b ? a : b);
 
     return Card(
       elevation: AppDimensions.cardElevation,
@@ -446,13 +457,13 @@ class _DwellTimeCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 _DwellStatChip(
-                  label: 'Median',
-                  value: '${dwellTime.medianDwellMinutes.toStringAsFixed(1)} mnt',
+                  label: 'Total Kunjungan',
+                  value: '${dwellTime.totalVisits}',
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            ...buckets.map(
+            ...distribution.map(
               (b) => Padding(
                 padding:
                     const EdgeInsets.only(bottom: AppDimensions.spacingS),
@@ -461,10 +472,11 @@ class _DwellTimeCard extends StatelessWidget {
                     SizedBox(
                       width: 72,
                       child: Text(
-                        b.label,
+                        b.bucket,
                         style: textTheme.bodySmall?.copyWith(
                           color: AppColors.onSurfaceVariant,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: AppDimensions.spacingS),
@@ -551,14 +563,24 @@ class _HourlyTrafficCard extends StatelessWidget {
 
   const _HourlyTrafficCard({required this.hourlyTraffic});
 
+  String _formatHour(String hour) {
+    try {
+      final dt = DateTime.parse(hour);
+      return '${dt.hour.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return hour;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     if (hourlyTraffic.isEmpty) return const SizedBox.shrink();
 
-    final maxCount =
-        hourlyTraffic.map((p) => p.count).reduce((a, b) => a > b ? a : b);
+    final maxCount = hourlyTraffic
+        .map((p) => p.visitorCount)
+        .reduce((a, b) => a > b ? a : b);
 
     return Card(
       elevation: AppDimensions.cardElevation,
@@ -591,7 +613,8 @@ class _HourlyTrafficCard extends StatelessWidget {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: hourlyTraffic.map((point) {
-                      final ratio = maxCount > 0 ? point.count / maxCount : 0.0;
+                      final ratio =
+                          maxCount > 0 ? point.visitorCount / maxCount : 0.0;
                       return Padding(
                         padding:
                             const EdgeInsets.only(right: barSpacing),
@@ -599,7 +622,7 @@ class _HourlyTrafficCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Text(
-                              '${point.count}',
+                              point.visitorCount.toString(),
                               style: textTheme.labelSmall?.copyWith(
                                 color: AppColors.onSurfaceVariant,
                                 fontSize: 9,
@@ -618,7 +641,7 @@ class _HourlyTrafficCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${point.hour}',
+                              _formatHour(point.hour),
                               style: textTheme.labelSmall?.copyWith(
                                 color: AppColors.onSurfaceVariant,
                                 fontSize: 9,

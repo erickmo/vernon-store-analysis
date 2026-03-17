@@ -7,13 +7,23 @@ import '../../domain/entities/analytics_dashboard_entity.dart';
 
 /// Card yang menampilkan distribusi gender dalam bentuk bar horizontal.
 class GenderChartCard extends StatelessWidget {
-  final GenderDistribution gender;
+  final List<GenderItem> gender;
 
   const GenderChartCard({super.key, required this.gender});
+
+  GenderItem? _find(String key) {
+    try {
+      return gender.firstWhere((g) => g.gender == key);
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final male = _find('male');
+    final female = _find('female');
 
     return Card(
       elevation: AppDimensions.cardElevation,
@@ -34,19 +44,36 @@ class GenderChartCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            _GenderBar(
-              label: 'Pria',
-              count: gender.male.count,
-              percentage: gender.male.percentage,
-              color: AppColors.chartBlue,
-            ),
-            const SizedBox(height: AppDimensions.spacingS),
-            _GenderBar(
-              label: 'Wanita',
-              count: gender.female.count,
-              percentage: gender.female.percentage,
-              color: AppColors.chartPink,
-            ),
+            if (male != null)
+              _GenderBar(
+                label: 'Pria',
+                count: male.count,
+                percentage: male.percentage,
+                color: AppColors.chartBlue,
+              ),
+            if (male != null) const SizedBox(height: AppDimensions.spacingS),
+            if (female != null)
+              _GenderBar(
+                label: 'Wanita',
+                count: female.count,
+                percentage: female.percentage,
+                color: AppColors.chartPink,
+              ),
+            if (gender.isNotEmpty &&
+                male == null &&
+                female == null)
+              ...gender.map(
+                (g) => Padding(
+                  padding:
+                      const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                  child: _GenderBar(
+                    label: g.gender,
+                    count: g.count,
+                    percentage: g.percentage,
+                    color: AppColors.chartBlue,
+                  ),
+                ),
+              ),
           ],
         ),
       ),
