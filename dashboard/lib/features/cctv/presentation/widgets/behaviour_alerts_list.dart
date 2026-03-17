@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../../domain/entities/behaviour_alert_entity.dart';
 import '../cubit/streaming_cubit.dart';
 
-/// Widget untuk menampilkan list behaviour alerts dengan dismiss capability.
+/// Widget untuk menampilkan list behaviour/shoplifting alerts.
 class BehaviourAlertsList extends StatefulWidget {
   /// List dari behaviour alerts yang ditampilkan.
   final List<BehaviourAlertEntity> alerts;
@@ -48,47 +48,45 @@ class _BehaviourAlertsListState extends State<BehaviourAlertsList> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildHeader(),
+        _buildHeader(context),
         const SizedBox(height: AppDimensions.spacingM),
         if (_displayedAlerts.isEmpty)
-          _buildEmptyState()
+          _buildEmptyState(context)
         else
-          _buildAlertsList(),
+          _buildAlertsList(context),
       ],
     );
   }
 
-  Widget _buildHeader() => Padding(
+  Widget _buildHeader(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingM),
     child: Row(
       children: [
         const Icon(
           Icons.warning_rounded,
-          color: Colors.orange,
-          size: 20,
+          color: AppColors.warning,
+          size: AppDimensions.iconM,
         ),
         const SizedBox(width: AppDimensions.spacingS),
-        const Text(
-          'Recent Alerts',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+        Text(
+          AppStrings.alerts,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppColors.surface,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const Spacer(),
         Text(
           '${_displayedAlerts.length}',
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
         ),
       ],
     ),
   );
 
-  Widget _buildEmptyState() => Padding(
+  Widget _buildEmptyState(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(
       vertical: AppDimensions.spacingL,
       horizontal: AppDimensions.spacingM,
@@ -99,40 +97,45 @@ class _BehaviourAlertsListState extends State<BehaviourAlertsList> {
         children: [
           Icon(
             Icons.check_circle_outline,
-            color: AppColors.textSecondary.withOpacity(0.5),
-            size: 40,
+            color: AppColors.onSurfaceVariant.withOpacity(0.5),
+            size: AppDimensions.iconXl,
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            'No alerts detected',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+          Text(
+            AppStrings.noData,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
           ),
         ],
       ),
     ),
   );
 
-  Widget _buildAlertsList() => ConstrainedBox(
+  Widget _buildAlertsList(BuildContext context) => ConstrainedBox(
     constraints: const BoxConstraints(maxHeight: 300),
     child: ListView.builder(
       shrinkWrap: true,
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingM),
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppDimensions.spacingM),
       itemCount: _displayedAlerts.length,
       itemBuilder: (context, index) =>
-          _buildAlertItem(_displayedAlerts[index], index),
+          _buildAlertItem(context, _displayedAlerts[index], index),
     ),
   );
 
-  Widget _buildAlertItem(BehaviourAlertEntity alert, int index) {
+  Widget _buildAlertItem(
+    BuildContext context,
+    BehaviourAlertEntity alert,
+    int index,
+  ) {
     final confidenceColor = _getConfidenceColor(alert.confidence);
+    final confidencePercent = (alert.confidence * 100).toStringAsFixed(0);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingS),
       child: Card(
-        color: AppColors.cardBackground,
+        color: AppColors.primaryDark,
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           child: Column(
@@ -141,7 +144,6 @@ class _BehaviourAlertsListState extends State<BehaviourAlertsList> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Alert type and confidence
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,58 +152,58 @@ class _BehaviourAlertsListState extends State<BehaviourAlertsList> {
                           children: [
                             Expanded(
                               child: Text(
-                                _formatAlertType(alert.type),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                ),
+                                '${AppStrings.shopliftingAlert} #${alert.id}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: AppColors.surface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: AppDimensions.spacingS),
-                            _buildConfidenceBadge(alert.confidence, confidenceColor),
+                            _buildConfidenceBadge(
+                              context,
+                              confidencePercent,
+                              confidenceColor,
+                            ),
                           ],
                         ),
-                        const SizedBox(height: AppDimensions.spacingS),
+                        const SizedBox(height: AppDimensions.spacingXs),
                         Text(
-                          alert.description,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          'Kamera ${alert.cameraId}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
-                  // Dismiss button
                   GestureDetector(
                     onTap: () {
                       setState(() {
                         _displayedAlerts.removeAt(index);
                       });
-                      widget.cubit.dismissAlert();
                     },
-                    child: Icon(
+                    child: const Icon(
                       Icons.close,
-                      color: AppColors.textSecondary,
-                      size: 18,
+                      color: AppColors.onSurfaceVariant,
+                      size: AppDimensions.iconS,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: AppDimensions.spacingS),
-              // Timestamp
               Text(
                 _formatTimestamp(alert.timestamp),
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 11,
-                ),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
               ),
             ],
           ),
@@ -210,52 +212,47 @@ class _BehaviourAlertsListState extends State<BehaviourAlertsList> {
     );
   }
 
-  Widget _buildConfidenceBadge(double confidence, Color color) {
-    final confidencePercent = (confidence * 100).toStringAsFixed(0);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 6,
-        vertical: 2,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        border: Border.all(color: color, width: 0.5),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        '$confidencePercent%',
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+  Widget _buildConfidenceBadge(
+    BuildContext context,
+    String confidencePercent,
+    Color color,
+  ) =>
+      Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingS,
+          vertical: AppDimensions.spacingXs,
         ),
-      ),
-    );
-  }
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.2),
+          border: Border.all(color: color, width: 0.5),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        ),
+        child: Text(
+          '$confidencePercent%',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      );
 
   Color _getConfidenceColor(double confidence) {
-    if (confidence >= 0.8) return Colors.red;
-    if (confidence >= 0.6) return Colors.orange;
-    return Colors.yellow;
-  }
-
-  String _formatAlertType(BehaviourType type) {
-    return type.toString().split('.').last.replaceAll('_', ' ').toUpperCase();
+    if (confidence >= 0.8) return AppColors.alertHigh;
+    if (confidence >= 0.6) return AppColors.alertMedium;
+    return AppColors.alertLow;
   }
 
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
 
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else {
-      return DateFormat('MMM d, HH:mm').format(timestamp);
-    }
+    if (difference.inMinutes < 1) return 'Baru saja';
+    if (difference.inMinutes < 60) return '${difference.inMinutes}m lalu';
+    if (difference.inHours < 24) return '${difference.inHours}j lalu';
+
+    return '${timestamp.day.toString().padLeft(2, '0')}/'
+        '${timestamp.month.toString().padLeft(2, '0')} '
+        '${timestamp.hour.toString().padLeft(2, '0')}:'
+        '${timestamp.minute.toString().padLeft(2, '0')}';
   }
 }

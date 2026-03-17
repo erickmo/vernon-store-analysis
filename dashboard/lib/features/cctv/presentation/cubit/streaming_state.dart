@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 
-import '../../domain/entities/behaviour_alert_entity.dart';
 import '../../domain/entities/cctv_entity.dart';
 
 /// Enum untuk status streaming video.
@@ -29,15 +28,6 @@ class StreamingState extends Equatable {
   /// Apakah controls overlay sedang ditampilkan.
   final bool showControls;
 
-  /// List behaviour alerts untuk CCTV ini.
-  final List<BehaviourAlertEntity> alerts;
-
-  /// Alert yang sedang aktif/ditampilkan, null jika tidak ada.
-  final BehaviourAlertEntity? activeAlert;
-
-  /// Apakah alert overlay sedang ditampilkan.
-  final bool showAlertOverlay;
-
   const StreamingState({
     this.cctv,
     this.streamStatus = StreamStatus.initial,
@@ -46,9 +36,6 @@ class StreamingState extends Equatable {
     this.isFullscreen = false,
     this.volume = 1.0,
     this.showControls = false,
-    this.alerts = const [],
-    this.activeAlert,
-    this.showAlertOverlay = false,
   });
 
   /// Create copy dari state dengan field yang bisa di-override.
@@ -60,9 +47,6 @@ class StreamingState extends Equatable {
     bool? isFullscreen,
     double? volume,
     bool? showControls,
-    List<BehaviourAlertEntity>? alerts,
-    BehaviourAlertEntity? activeAlert,
-    bool? showAlertOverlay,
   }) {
     return StreamingState(
       cctv: cctv ?? this.cctv,
@@ -72,9 +56,6 @@ class StreamingState extends Equatable {
       isFullscreen: isFullscreen ?? this.isFullscreen,
       volume: volume ?? this.volume,
       showControls: showControls ?? this.showControls,
-      alerts: alerts ?? this.alerts,
-      activeAlert: activeAlert ?? this.activeAlert,
-      showAlertOverlay: showAlertOverlay ?? this.showAlertOverlay,
     );
   }
 
@@ -87,8 +68,5 @@ class StreamingState extends Equatable {
     isFullscreen,
     volume,
     showControls,
-    alerts,
-    activeAlert,
-    showAlertOverlay,
   ];
 }

@@ -10,54 +10,57 @@ enum CCTVStatus {
 /// Entity untuk CCTV yang menampilkan video streaming.
 class CCTVEntity extends Equatable {
   /// ID unik dari CCTV.
-  final String id;
+  final int id;
+
+  /// ID toko tempat kamera dipasang.
+  final int storeId;
 
   /// Nama CCTV.
   final String name;
 
-  /// Lokasi fisik CCTV.
-  final String location;
-
   /// URL stream RTSP atau HTTP untuk video.
   final String streamUrl;
 
-  /// Status saat ini dari CCTV (online, offline, alert).
-  final CCTVStatus status;
+  /// Zona lokasi kamera (e.g., "entry", "cashier", "warehouse").
+  final String locationZone;
 
-  /// Resolusi video dalam pixel (e.g., 1080.0 untuk 1080p).
-  final double resolution;
+  /// Deskripsi kamera.
+  final String? description;
 
-  /// Framerate video dalam fps.
-  final int fps;
+  /// Apakah kamera aktif.
+  final bool isActive;
 
-  /// Bitrate video (e.g., "5000 kbps").
-  final String bitrate;
+  /// Timestamp kapan CCTV dibuat.
+  final DateTime createdAt;
 
   /// Timestamp kapan CCTV terakhir di-update.
-  final DateTime lastUpdated;
+  final DateTime updatedAt;
 
   const CCTVEntity({
     required this.id,
+    required this.storeId,
     required this.name,
-    required this.location,
     required this.streamUrl,
-    required this.status,
-    required this.resolution,
-    required this.fps,
-    required this.bitrate,
-    required this.lastUpdated,
+    required this.locationZone,
+    this.description,
+    required this.isActive,
+    required this.createdAt,
+    required this.updatedAt,
   });
+
+  /// Status derived dari isActive.
+  CCTVStatus get status => isActive ? CCTVStatus.online : CCTVStatus.offline;
 
   @override
   List<Object?> get props => [
     id,
+    storeId,
     name,
-    location,
     streamUrl,
-    status,
-    resolution,
-    fps,
-    bitrate,
-    lastUpdated,
+    locationZone,
+    description,
+    isActive,
+    createdAt,
+    updatedAt,
   ];
 }

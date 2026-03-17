@@ -4,10 +4,11 @@ import 'package:video_player/video_player.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimensions.dart';
+import '../../../../core/constants/app_strings.dart';
 import '../cubit/streaming_cubit.dart';
 import '../cubit/streaming_state.dart';
 
-/// Widget untuk menampilkan video player stream dengan controls dan alerts.
+/// Widget untuk menampilkan video player stream dengan controls overlay.
 class StreamPlayerWidget extends StatelessWidget {
   const StreamPlayerWidget({super.key});
 
@@ -16,22 +17,20 @@ class StreamPlayerWidget extends StatelessWidget {
     return BlocBuilder<StreamingCubit, StreamingState>(
       builder: (context, state) {
         return switch (state.streamStatus) {
-          StreamStatus.initial || StreamStatus.loading =>
-            _buildLoadingView(),
-          StreamStatus.streaming =>
-            _buildVideoPlayerStack(context, state),
-          StreamStatus.error => _buildErrorView(state.errorMessage ?? 'Unknown error'),
-          StreamStatus.noSignal =>
-            _buildNoSignalView(),
+          StreamStatus.initial || StreamStatus.loading => _buildLoadingView(),
+          StreamStatus.streaming => _buildVideoPlayerStack(context, state),
+          StreamStatus.error =>
+            _buildErrorView(state.errorMessage ?? AppStrings.unknownError),
+          StreamStatus.noSignal => _buildNoSignalView(),
         };
       },
     );
   }
 
   Widget _buildLoadingView() => Container(
-    color: AppColors.dark,
+    color: AppColors.primaryDark,
     child: const Center(
-      child: CircularProgressIndicator(color: AppColors.primary),
+      child: CircularProgressIndicator(color: AppColors.accent),
     ),
   );
 
@@ -51,13 +50,10 @@ class StreamPlayerWidget extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Video player
           AspectRatio(
             aspectRatio: videoController.value.aspectRatio,
             child: VideoPlayer(videoController),
           ),
-
-          // Controls overlay
           AnimatedOpacity(
             opacity: state.showControls ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 300),
@@ -66,14 +62,6 @@ class StreamPlayerWidget extends StatelessWidget {
               child: _buildControlsOverlay(context, state),
             ),
           ),
-
-          // Alert overlay
-          if (state.showAlertOverlay && state.activeAlert != null)
-            Positioned(
-              top: 16,
-              right: 16,
-              child: _buildAlertBadge(state.activeAlert!),
-            ),
         ],
       ),
     );
@@ -97,62 +85,45 @@ class StreamPlayerWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Top controls
           Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.fullscreen, color: Colors.white),
+                  icon: const Icon(Icons.fullscreen, color: AppColors.surface),
                   onPressed: () => cubit.toggleFullscreen(),
                   tooltip: 'Fullscreen',
                 ),
               ],
             ),
           ),
-
-          // Center play/pause button
           FloatingActionButton(
             backgroundColor: AppColors.primary,
             onPressed: () => cubit.togglePlayPause(),
             child: Icon(
               state.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white,
+              color: AppColors.surface,
             ),
           ),
-
-          // Bottom controls
           Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingM),
-            child: Column(
+            child: Row(
               children: [
-                // Volume slider
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingM,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        state.volume > 0
-                            ? Icons.volume_up
-                            : Icons.volume_off,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingS),
-                      Expanded(
-                        child: Slider(
-                          value: state.volume,
-                          min: 0.0,
-                          max: 1.0,
-                          onChanged: (value) => cubit.setVolume(value),
-                          activeColor: AppColors.primary,
-                          inactiveColor: Colors.white.withOpacity(0.3),
-                        ),
-                      ),
-                    ],
+                Icon(
+                  state.volume > 0 ? Icons.volume_up : Icons.volume_off,
+                  color: AppColors.surface,
+                  size: AppDimensions.iconM,
+                ),
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Slider(
+                    value: state.volume,
+                    min: 0.0,
+                    max: 1.0,
+                    onChanged: (value) => cubit.setVolume(value),
+                    activeColor: AppColors.accent,
+                    inactiveColor: AppColors.surface.withOpacity(0.3),
                   ),
                 ),
               ],
@@ -163,57 +134,22 @@ class StreamPlayerWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildAlertBadge(dynamic alert) => Container(
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.spacingM,
-      vertical: AppDimensions.spacingS,
-    ),
-    decoration: BoxDecoration(
-      color: _getConfidenceColor(alert.confidence).withOpacity(0.9),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '⚠️ Behaviour Alert',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          alert.description,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-          ),
-        ),
-      ],
-    ),
-  );
-
   Widget _buildErrorView(String message) => Container(
-    color: AppColors.dark,
+    color: AppColors.primaryDark,
     child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(
             Icons.error_outline,
-            color: Colors.red,
-            size: 48,
+            color: AppColors.error,
+            size: AppDimensions.iconXl,
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          Text(
+          const Text(
             'Stream Error',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: AppColors.surface,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -226,8 +162,8 @@ class StreamPlayerWidget extends StatelessWidget {
             child: Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: AppColors.surface.withOpacity(0.7),
                 fontSize: 12,
               ),
             ),
@@ -238,30 +174,30 @@ class StreamPlayerWidget extends StatelessWidget {
   );
 
   Widget _buildNoSignalView() => Container(
-    color: AppColors.dark,
+    color: AppColors.primaryDark,
     child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(
-            Icons.signal_no_sim,
-            color: Colors.orange,
-            size: 48,
+            Icons.signal_cellular_off,
+            color: AppColors.warning,
+            size: AppDimensions.iconXl,
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
-            'No Signal',
-            style: TextStyle(
-              color: Colors.white,
+          Text(
+            AppStrings.streamInactive,
+            style: const TextStyle(
+              color: AppColors.surface,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingS),
-          const Text(
-            'CCTV is currently offline',
+          Text(
+            'Kamera sedang tidak aktif',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: AppColors.surface.withOpacity(0.7),
               fontSize: 12,
             ),
           ),
@@ -269,10 +205,4 @@ class StreamPlayerWidget extends StatelessWidget {
       ),
     ),
   );
-
-  Color _getConfidenceColor(double confidence) {
-    if (confidence >= 0.8) return Colors.red;
-    if (confidence >= 0.6) return Colors.orange;
-    return Colors.yellow;
-  }
 }

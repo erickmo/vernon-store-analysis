@@ -1,37 +1,30 @@
-import '../../domain/entities/behaviour_alert_entity.dart';
-import '../../domain/entities/cctv_entity.dart';
-import '../models/behaviour_alert_model.dart';
 import '../models/cctv_model.dart';
 
-/// Abstract datasource untuk CCTV local data.
+/// Abstract datasource untuk CCTV local data (fallback / cache).
 abstract class CCTVLocalDataSource {
   /// Get semua CCTV dari local storage.
   Future<List<CCTVModel>> getCCTVList();
 
   /// Get CCTV berdasarkan ID.
-  Future<CCTVModel?> getCCTVById(String id);
-
-  /// Get alerts untuk CCTV tertentu.
-  Future<List<BehaviourAlertModel>> getAlertsByCCTV(String cctvId);
+  Future<CCTVModel?> getCCTVById(int id);
 }
 
 /// Concrete implementation CCTVLocalDataSource dengan dummy data.
 class CCTVLocalDataSourceImpl implements CCTVLocalDataSource {
-  static const String _googleSampleVideo1 =
+  static const String _sampleVideo1 =
       'https://commondatastorage.googleapis.com/gtv-videos-library/sample/BigBuckBunny.mp4';
-  static const String _googleSampleVideo2 =
+  static const String _sampleVideo2 =
       'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ElephantsDream.mp4';
-  static const String _googleSampleVideo3 =
+  static const String _sampleVideo3 =
       'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ForBiggerBlazes.mp4';
-  static const String _googleSampleVideo4 =
+  static const String _sampleVideo4 =
       'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ForBiggerEscapes.mp4';
-  static const String _googleSampleVideo5 =
+  static const String _sampleVideo5 =
       'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ForBiggerFun.mp4';
-  static const String _googleSampleVideo6 =
+  static const String _sampleVideo6 =
       'https://commondatastorage.googleapis.com/gtv-videos-library/sample/VolleyballMatch.mp4';
 
   late final List<CCTVModel> _dummyCCTVs;
-  late final Map<String, List<BehaviourAlertModel>> _dummyAlerts;
 
   CCTVLocalDataSourceImpl() {
     _initializeDummyData();
@@ -42,159 +35,87 @@ class CCTVLocalDataSourceImpl implements CCTVLocalDataSource {
 
     _dummyCCTVs = [
       CCTVModel(
-        id: 'cctv_001',
+        id: 1,
+        storeId: 1,
         name: 'Entrance Main',
-        location: 'Main Entrance',
-        streamUrl: _googleSampleVideo1,
-        status: CCTVStatus.online,
-        resolution: 1080.0,
-        fps: 30,
-        bitrate: '5000 kbps',
-        lastUpdated: now,
+        streamUrl: _sampleVideo1,
+        locationZone: 'entry',
+        description: 'Kamera pintu masuk utama',
+        isActive: true,
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now,
       ),
       CCTVModel(
-        id: 'cctv_002',
+        id: 2,
+        storeId: 1,
         name: 'Parking Lot A',
-        location: 'Outdoor Parking',
-        streamUrl: _googleSampleVideo2,
-        status: CCTVStatus.online,
-        resolution: 720.0,
-        fps: 24,
-        bitrate: '3000 kbps',
-        lastUpdated: now,
+        streamUrl: _sampleVideo2,
+        locationZone: 'parking',
+        description: 'Kamera area parkir outdoor',
+        isActive: true,
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now,
       ),
       CCTVModel(
-        id: 'cctv_003',
+        id: 3,
+        storeId: 1,
         name: 'Checkout Counter',
-        location: 'Store Floor',
-        streamUrl: _googleSampleVideo3,
-        status: CCTVStatus.online,
-        resolution: 1080.0,
-        fps: 30,
-        bitrate: '5000 kbps',
-        lastUpdated: now,
+        streamUrl: _sampleVideo3,
+        locationZone: 'cashier',
+        description: 'Kamera area kasir',
+        isActive: true,
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now,
       ),
       CCTVModel(
-        id: 'cctv_004',
+        id: 4,
+        storeId: 1,
         name: 'Warehouse',
-        location: 'Back Storage',
-        streamUrl: _googleSampleVideo4,
-        status: CCTVStatus.online,
-        resolution: 720.0,
-        fps: 24,
-        bitrate: '3000 kbps',
-        lastUpdated: now,
+        streamUrl: _sampleVideo4,
+        locationZone: 'warehouse',
+        description: 'Kamera gudang belakang',
+        isActive: true,
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now,
       ),
       CCTVModel(
-        id: 'cctv_005',
+        id: 5,
+        storeId: 1,
         name: 'VIP Room',
-        location: 'Building B',
-        streamUrl: _googleSampleVideo5,
-        status: CCTVStatus.offline,
-        resolution: 1080.0,
-        fps: 30,
-        bitrate: '5000 kbps',
-        lastUpdated: now.subtract(const Duration(hours: 2)),
+        streamUrl: _sampleVideo5,
+        locationZone: 'vip',
+        description: 'Kamera ruang VIP',
+        isActive: false,
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now.subtract(const Duration(hours: 2)),
       ),
       CCTVModel(
-        id: 'cctv_006',
+        id: 6,
+        storeId: 1,
         name: 'Corridor 2F',
-        location: 'Second Floor',
-        streamUrl: _googleSampleVideo6,
-        status: CCTVStatus.alert,
-        resolution: 720.0,
-        fps: 24,
-        bitrate: '3000 kbps',
-        lastUpdated: now.subtract(const Duration(minutes: 5)),
+        streamUrl: _sampleVideo6,
+        locationZone: 'corridor',
+        description: 'Kamera koridor lantai 2',
+        isActive: true,
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now.subtract(const Duration(minutes: 5)),
       ),
     ];
-
-    _dummyAlerts = {
-      'cctv_001': [
-        BehaviourAlertModel(
-          id: 'alert_001_001',
-          cctvId: 'cctv_001',
-          cctvName: 'Entrance Main',
-          type: BehaviourType.loitering,
-          confidence: 0.92,
-          description: 'Person loitering at entrance for 3+ minutes',
-          timestamp: now.subtract(const Duration(minutes: 15)),
-          imageUrl: null,
-        ),
-      ],
-      'cctv_002': [
-        BehaviourAlertModel(
-          id: 'alert_002_001',
-          cctvId: 'cctv_002',
-          cctvName: 'Parking Lot A',
-          type: BehaviourType.fighting,
-          confidence: 0.75,
-          description: 'Potential altercation detected',
-          timestamp: now.subtract(const Duration(hours: 1)),
-          imageUrl: null,
-        ),
-        BehaviourAlertModel(
-          id: 'alert_002_002',
-          cctvId: 'cctv_002',
-          cctvName: 'Parking Lot A',
-          type: BehaviourType.running,
-          confidence: 0.88,
-          description: 'Person running across parking area',
-          timestamp: now.subtract(const Duration(hours: 2)),
-          imageUrl: null,
-        ),
-      ],
-      'cctv_003': [
-        BehaviourAlertModel(
-          id: 'alert_003_001',
-          cctvId: 'cctv_003',
-          cctvName: 'Checkout Counter',
-          type: BehaviourType.crowding,
-          confidence: 0.68,
-          description: 'Unusual crowd detected at counter',
-          timestamp: now.subtract(const Duration(minutes: 45)),
-          imageUrl: null,
-        ),
-      ],
-      'cctv_004': [],
-      'cctv_005': [],
-      'cctv_006': [
-        BehaviourAlertModel(
-          id: 'alert_006_001',
-          cctvId: 'cctv_006',
-          cctvName: 'Corridor 2F',
-          type: BehaviourType.loitering,
-          confidence: 0.85,
-          description: 'Loitering detected in restricted area',
-          timestamp: now.subtract(const Duration(minutes: 5)),
-          imageUrl: null,
-        ),
-      ],
-    };
   }
 
   @override
   Future<List<CCTVModel>> getCCTVList() async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
     return _dummyCCTVs;
   }
 
   @override
-  Future<CCTVModel?> getCCTVById(String id) async {
-    // Simulate network delay
+  Future<CCTVModel?> getCCTVById(int id) async {
     await Future.delayed(const Duration(milliseconds: 300));
     try {
       return _dummyCCTVs.firstWhere((cctv) => cctv.id == id);
     } catch (e) {
       return null;
     }
-  }
-
-  @override
-  Future<List<BehaviourAlertModel>> getAlertsByCCTV(String cctvId) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _dummyAlerts[cctvId] ?? [];
   }
 }

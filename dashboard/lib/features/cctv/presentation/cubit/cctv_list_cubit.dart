@@ -10,11 +10,11 @@ class CCTVListCubit extends Cubit<CCTVListState> {
   CCTVListCubit({required this.getCCTVListUseCase})
       : super(const CCTVListInitial());
 
-  /// Memuat daftar CCTV dari repository.
-  Future<void> loadCCTVList() async {
+  /// Memuat daftar kamera dari repository untuk [storeId].
+  Future<void> loadCCTVList(int storeId) async {
     emit(const CCTVListLoading());
 
-    final result = await getCCTVListUseCase();
+    final result = await getCCTVListUseCase(storeId);
 
     result.fold(
       (failure) => emit(CCTVListError(message: failure.message)),

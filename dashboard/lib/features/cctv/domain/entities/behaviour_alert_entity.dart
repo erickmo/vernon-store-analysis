@@ -1,60 +1,66 @@
 import 'package:equatable/equatable.dart';
 
-/// Enum untuk tipe behaviour yang terdeteksi.
-enum BehaviourType {
-  loitering,
-  fighting,
-  running,
-  crowding,
-  other,
-}
-
-/// Entity untuk alert behaviour detection dari CCTV.
+/// Entity untuk shoplifting behaviour alert dari CCTV.
 class BehaviourAlertEntity extends Equatable {
   /// ID unik dari alert.
-  final String id;
+  final int id;
 
-  /// ID CCTV yang mendeteksi behaviour.
-  final String cctvId;
+  /// ID kunjungan yang terkait.
+  final int visitId;
 
-  /// Nama CCTV untuk display.
-  final String cctvName;
-
-  /// Tipe behaviour yang terdeteksi.
-  final BehaviourType type;
+  /// ID kamera yang mendeteksi.
+  final int cameraId;
 
   /// Confidence level (0.0 - 1.0) dari deteksi.
   final double confidence;
 
-  /// Deskripsi detail dari behaviour alert.
-  final String description;
-
   /// Waktu terdeteksi behaviour.
   final DateTime timestamp;
 
-  /// URL gambar/snapshot dari alert (optional).
-  final String? imageUrl;
+  /// Path snapshot gambar (optional).
+  final String? snapshotPath;
+
+  /// Apakah sudah dikirim notifikasi.
+  final bool notified;
+
+  /// Apakah sudah diselesaikan.
+  final bool resolved;
+
+  /// Waktu diselesaikan (null jika belum).
+  final DateTime? resolvedAt;
+
+  /// Catatan penyelesaian (null jika belum).
+  final String? resolvedNote;
+
+  /// Timestamp kapan alert dibuat.
+  final DateTime createdAt;
 
   const BehaviourAlertEntity({
     required this.id,
-    required this.cctvId,
-    required this.cctvName,
-    required this.type,
+    required this.visitId,
+    required this.cameraId,
     required this.confidence,
-    required this.description,
     required this.timestamp,
-    this.imageUrl,
+    this.snapshotPath,
+    required this.notified,
+    required this.resolved,
+    this.resolvedAt,
+    this.resolvedNote,
+    required this.createdAt,
   });
 
   @override
   List<Object?> get props => [
     id,
-    cctvId,
-    cctvName,
-    type,
+    visitId,
+    cameraId,
     confidence,
-    description,
     timestamp,
-    imageUrl,
+    snapshotPath,
+    notified,
+    resolved,
+    resolvedAt,
+    resolvedNote,
+    createdAt,
   ];
 }
